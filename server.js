@@ -5,7 +5,9 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
+const fileUpload = require("express-fileupload");
 const multer = require("multer");
+
 
 // Configurare server
 const app = express();
@@ -58,10 +60,26 @@ db.serialize(() => {
     `);
 });
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Middleware pentru upload
+app.use(fileUpload());
+
+// Endpoint pentru upload resurse
+app.post("/upload-resource", (req, res) => {
+    if (!req.files || Object.keys(req.files).length === 0) {
+        return res.status(400).send("No files were uploaded.");
+    }
+
+    const file = req.files.file;
+    const uploadPath = path.join(__dirname, "uploads", file.name);
+
+    // Salvează fișierul
+    file.mv(uploadPath, (err) => {
+        if (err) {
+            return res.status(500).send(err);
+        }
+        res.send("File uploaded!");
+    });
+});
 
 // Configurare upload fișiere
 const upload = multer({ dest: "uploads/" });
