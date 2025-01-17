@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Benutzer hinzufügen (Adaugă utilizator)</title>
+    <link href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ed7f10;
+        }
+
+        body {
+            background-color: #f9f9f9;
+        }
+
+        main.container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #ffffff;
+        }
+
+        h1 {
+            color: var(--primary-color);
+        }
+
+        input, button {
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.7rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #d9730c;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1>Benutzer hinzufügen (Adaugă utilizator)</h1>
+        <form id="bulkUploadForm">
+            <label for="file">CSV-Datei hochladen (Încărcați fișierul CSV):</label>
+            <input type="file" id="file" name="file" accept=".csv" required>
+            <button type="submit">Hochladen (Încărcați)</button>
+        </form>
+        <p id="successMessage" style="color:green; font-weight: bold;"></p>
+        <p id="errorMessage" style="color:red; font-weight: bold;"></p>
+    </main>
+    <script>
+        document.getElementById("bulkUploadForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById("file").files[0];
+            const formData = new FormData();
+            formData.append("file", fileInput);
+
+            try {
+                const response = await fetch("/admin/bulk-upload", {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                    body: formData,
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById("successMessage").innerText = `${data.successCount} Benutzer erfolgreich hinzugefügt! (Utilizatori adăugați cu succes!)`;
+                } else {
+                    document.getElementById("errorMessage").innerText = data.errors.join(", ");
+                }
+            } catch (error) {
+                document.getElementById("errorMessage").innerText = "Fehler beim Hochladen (Eroare la încărcare)";
+            }
+        });
+    </script>
+</body>
+</html>
